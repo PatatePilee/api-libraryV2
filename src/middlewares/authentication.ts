@@ -1,34 +1,39 @@
 import * as express from "express";
 import * as jwt from "jsonwebtoken";
 
-export function expressAuthentication(
+const SECRET_KEY = process.env.JWT_SECRET || "your_jwt_secret_key";
+
+export const expressAuthentication = (
   request: express.Request,
   securityName: string,
   scopes?: string[]
-): Promise<any> {
-  if (securityName === /*clef du securityDefinition */) {
-    const token = //Récupérer le token
+): Promise<any> => {
+  if (securityName === "jwt") {
+    const token = request.headers["authorization"]?.split(" ")[1];
 
     return new Promise((resolve, reject) => {
       if (!token) {
-        reject(/*throw error no token*/);
+        reject(new Error("No token provided"));
       }
-      jwt.verify(
-        token,
-        /*your secret*/,
-        function (err: any, decoded: any) {
-          if (err) {
-            reject(err);
-          } else {
-            if (scopes !== undefined) {
-              //Custom verif
+      jwt.verify(token!, SECRET_KEY, function (err: any, decoded: any) {
+        if (err) {
+          reject(err);
+        } else {
+          if (scopes && scopes.length) {
+            const userScopes = decoded.scopes || [];
+            const hasValidScope = scopes.some((scope) =>
+              userScopes.includes(scope)
+            );
+            if (!hasValidScope) {
+              reject(new Error("Invalid scope"));
+              return;
             }
-            resolve(decoded);
           }
+          resolve(decoded);
         }
-      );
+      });
     });
   } else {
-    /* throw error not found securityDefinition*/
+    return Promise.reject(new Error("Security definition not found"));
   }
-}
+};

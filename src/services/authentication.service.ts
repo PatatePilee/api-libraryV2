@@ -2,6 +2,7 @@ import { User } from "../models/user.model"; // Modèle Sequelize
 import jwt from "jsonwebtoken"; // Pour générer le JWT
 import { Buffer } from "buffer"; // Pour décoder Base64
 import { notFound } from "../error/NotFoundError";
+import e from "express";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key"; // Clé secrète pour signer le token
 
@@ -22,10 +23,18 @@ export class AuthenticationService {
       "utf-8"
     );
 
+    let role;
+    if (user.username === "admin") {
+      role = "admin";
+    } else if (user.username === "gerant") {
+      role = "gerant";
+    } else {
+      role = "utilisateur";
+    }
     // Vérifie si le mot de passe est correct
     if (password === decodedPassword) {
       // Si l'utilisateur est authentifié, on génère un JWT
-      const token = jwt.sign({ username: user.username }, JWT_SECRET, {
+      const token = jwt.sign({ username: user.username, role }, JWT_SECRET, {
         expiresIn: "1h",
       });
       return token;

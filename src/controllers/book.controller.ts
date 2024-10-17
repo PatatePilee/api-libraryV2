@@ -7,6 +7,7 @@ import {
   Path,
   Post,
   Route,
+  Security,
   Tags,
 } from "tsoa";
 import {
@@ -21,49 +22,55 @@ import { BookCollectionOutputDTO } from "../dto/bookCollection.dto";
 @Tags("Books")
 export class BookController extends Controller {
   @Get("/")
+  @Security("jwt", ["delete:books"])
   public async getAllBooks(): Promise<BookOutputDTO[]> {
     return bookService.getAllBooks();
   }
 
   @Get("{id}")
+  @Security("jwt", ["read:books"])
   public async getBook(@Path("id") id: number): Promise<BookOutputDTO> {
     return await bookService.getBookById(id);
   }
 
   @Post("/")
+  @Security("jwt", ["write:books"])
   public async postBooks(
-    @Body() requestBody: BookInputDTO,
+    @Body() requestBody: BookInputDTO
   ): Promise<BookOutputDTO> {
     return bookService.createBook(
       requestBody.title,
       requestBody.publish_year,
       requestBody.author_id,
-      requestBody.isbn,
+      requestBody.isbn
     );
   }
 
   @Patch("{id}")
+  @Security("jwt", ["write:books"])
   public async patchBook(
     @Path("id") id: number,
-    @Body() requestBody: BookInputPatchDTO,
+    @Body() requestBody: BookInputPatchDTO
   ): Promise<BookOutputDTO> {
     return bookService.updateBook(
       id,
       requestBody.title,
       requestBody.publish_year,
       requestBody.author_id,
-      requestBody.isbn,
+      requestBody.isbn
     );
   }
 
   @Delete("{id}")
+  @Security("jwt", ["delete:books"])
   public async deleteBook(@Path("id") id: number): Promise<void> {
     await bookService.deleteBook(id);
   }
 
   @Get("{id}/book-collections")
+  @Security("jwt", ["read:books"])
   public async getBookCollectionsByBookId(
-    @Path() id: number,
+    @Path() id: number
   ): Promise<BookCollectionOutputDTO[]> {
     return bookService.getBookCollectionsByBookId(id);
   }

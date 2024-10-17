@@ -8,6 +8,7 @@ import {
   Body,
   Tags,
   Patch,
+  Security,
 } from "tsoa";
 import { authorService } from "../services/author.service";
 import {
@@ -22,20 +23,23 @@ import { BookOutputDTO } from "../dto/book.dto";
 export class AuthorController extends Controller {
   // Récupère tous les auteurs
   @Get("/")
+  @Security("jwt", ["read:authors"])
   public async getAllAuthors(): Promise<AuthorOutputDTO[]> {
     return authorService.getAllAuthors();
   }
 
   // Récupère un auteur par ID
   @Get("{id}")
+  @Security("jwt", ["read:authors"])
   public async getAuthorById(@Path() id: number): Promise<AuthorOutputDTO> {
     return authorService.getAuthorById(id);
   }
 
   // Crée un nouvel auteur
   @Post("/")
+  @Security("jwt", ["write:authors"])
   public async createAuthor(
-    @Body() requestBody: AuthorInputDTO,
+    @Body() requestBody: AuthorInputDTO
   ): Promise<AuthorOutputDTO> {
     const { first_name, last_name } = requestBody;
     return authorService.createAuthor(first_name, last_name);
@@ -43,23 +47,26 @@ export class AuthorController extends Controller {
 
   // Supprime un auteur par ID
   @Delete("{id}")
+  @Security("jwt", ["delete:authors"])
   public async deleteAuthor(@Path() id: number): Promise<void> {
     await authorService.deleteAuthor(id);
   }
 
   // Met à jour un auteur par ID
   @Patch("{id}")
+  @Security("jwt", ["write:authors"])
   public async updateAuthor(
     @Path() id: number,
-    @Body() requestBody: AuthorInputPatchDTO,
+    @Body() requestBody: AuthorInputPatchDTO
   ): Promise<AuthorOutputDTO> {
     const { first_name, last_name } = requestBody;
     return authorService.updateAuthor(id, first_name, last_name);
   }
 
   @Get("{id}/books")
+  @Security("jwt", ["read:authors"])
   public async getBooksByAuthorId(
-    @Path() id: number,
+    @Path() id: number
   ): Promise<BookOutputDTO[]> {
     return await authorService.getBooksByAuthorId(id);
   }
